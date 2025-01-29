@@ -2,12 +2,13 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
 import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
 
-import { DEFAULT_WORDS_PER_DOT } from "src/constants";
+import { DEFAULT_BIRTHDAY, DEFAULT_WORDS_PER_DOT } from "src/constants";
 
 import type CalendarPlugin from "./main";
 
 export interface ISettings {
   wordsPerDot: number;
+  birthday: string,
   weekStart: IWeekStartOption;
   shouldConfirmBeforeCreate: boolean;
 
@@ -28,6 +29,7 @@ export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
   weekStart: "locale" as IWeekStartOption,
 
+  birthday: DEFAULT_BIRTHDAY,
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
 
   localeOverride: "system-default",
@@ -66,13 +68,31 @@ export class CalendarSettingsTab extends PluginSettingTab {
       text: "General Settings",
     });
     this.addDotThresholdSetting();
-    this.addWeekStartSetting(); // oops
+    this.addBirthdaySetting();
+    this.addWeekStartSetting();
     this.addConfirmCreateSetting();
 
     this.containerEl.createEl("h3", {
       text: "Advanced Settings",
     });
     this.addLocaleOverrideSetting();
+  }
+
+  addBirthdaySetting(): void {
+    new Setting(this.containerEl)
+      .setName("Birthday")
+      .setDesc("In the format YYYY-MM-DD")
+      .addText((textfield) => {
+        textfield.setPlaceholder(String(DEFAULT_BIRTHDAY));
+        textfield.inputEl.type = "date";
+        textfield.setValue(String(this.plugin.options.birthday));
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            birthday: value !== "" ? String(value) : undefined,
+          }));
+        });
+      });
+
   }
 
   addDotThresholdSetting(): void {
