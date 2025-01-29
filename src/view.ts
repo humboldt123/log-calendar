@@ -3,20 +3,23 @@ import {
   getDailyNote,
   getDailyNoteSettings,
   getDateFromFile,
-  getWeeklyNote,
-  getWeeklyNoteSettings,
+  // getWeeklyNote, todo: remove
+  // getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
-import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
+// import { tryToCreateWeeklyNote } from "src/io/weeklyNotes"; todo: remove
 import type { ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
-import { activeFile, dailyNotes, weeklyNotes, settings } from "./ui/stores";
+import { 
+  activeFile, dailyNotes, 
+  //weeklyNotes,  todo: remove
+  settings } from "./ui/stores";
 import {
   customTagsSource,
   streakSource,
@@ -32,7 +35,7 @@ export default class CalendarView extends ItemView {
     super(leaf);
 
     this.openOrCreateDailyNote = this.openOrCreateDailyNote.bind(this);
-    this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
+    //this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this); todo: remove
 
     this.onNoteSettingsUpdate = this.onNoteSettingsUpdate.bind(this);
     this.onFileCreated = this.onFileCreated.bind(this);
@@ -41,10 +44,10 @@ export default class CalendarView extends ItemView {
     this.onFileOpen = this.onFileOpen.bind(this);
 
     this.onHoverDay = this.onHoverDay.bind(this);
-    this.onHoverWeek = this.onHoverWeek.bind(this);
+    // this.onHoverWeek = this.onHoverWeek.bind(this); todo: remove
 
     this.onContextMenuDay = this.onContextMenuDay.bind(this);
-    this.onContextMenuWeek = this.onContextMenuWeek.bind(this);
+    //this.onContextMenuWeek = this.onContextMenuWeek.bind(this);
 
     this.registerEvent(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,11 +107,11 @@ export default class CalendarView extends ItemView {
       target: (this as any).contentEl,
       props: {
         onClickDay: this.openOrCreateDailyNote,
-        onClickWeek: this.openOrCreateWeeklyNote,
+        //onClickWeek: this.openOrCreateWeeklyNote, todo: remove
         onHoverDay: this.onHoverDay,
-        onHoverWeek: this.onHoverWeek,
+        // onHoverWeek: this.onHoverWeek, todo: remove
         onContextMenuDay: this.onContextMenuDay,
-        onContextMenuWeek: this.onContextMenuWeek,
+        // onContextMenuWeek: this.onContextMenuWeek,
         sources,
       },
     });
@@ -133,6 +136,7 @@ export default class CalendarView extends ItemView {
     );
   }
 
+  /* todo: remove
   onHoverWeek(
     date: Moment,
     targetEl: EventTarget,
@@ -151,6 +155,7 @@ export default class CalendarView extends ItemView {
       note?.path
     );
   }
+  */
 
   private onContextMenuDay(date: Moment, event: MouseEvent): void {
     const note = getDailyNote(date, get(dailyNotes));
@@ -164,6 +169,7 @@ export default class CalendarView extends ItemView {
     });
   }
 
+  /* todo: remove
   private onContextMenuWeek(date: Moment, event: MouseEvent): void {
     const note = getWeeklyNote(date, get(weeklyNotes));
     if (!note) {
@@ -176,9 +182,11 @@ export default class CalendarView extends ItemView {
     });
   }
 
+  */
+
   private onNoteSettingsUpdate(): void {
     dailyNotes.reindex();
-    weeklyNotes.reindex();
+    //weeklyNotes.reindex(); todo: remove
     this.updateActiveFile();
   }
 
@@ -188,7 +196,7 @@ export default class CalendarView extends ItemView {
       this.updateActiveFile();
     }
     if (getDateFromFile(file, "week")) {
-      weeklyNotes.reindex();
+      //weeklyNotes.reindex();
       this.updateActiveFile();
     }
   }
@@ -207,7 +215,7 @@ export default class CalendarView extends ItemView {
         this.calendar.tick();
       }
       if (getDateFromFile(file, "week")) {
-        weeklyNotes.reindex();
+        //weeklyNotes.reindex(); todo: remove
         this.calendar.tick();
       }
     }
@@ -234,27 +242,28 @@ export default class CalendarView extends ItemView {
   }
 
   public revealActiveNote(): void {
-    const { moment } = window;
+    //const { moment } = window;
     const { activeLeaf } = this.app.workspace;
 
     if (activeLeaf.view instanceof FileView) {
       // Check to see if the active note is a daily-note
-      let date = getDateFromFile(activeLeaf.view.file, "day");
+      const date = getDateFromFile(activeLeaf.view.file, "day");
       if (date) {
         this.calendar.$set({ displayedMonth: date });
         return;
       }
 
       // Check to see if the active note is a weekly-note
-      const { format } = getWeeklyNoteSettings();
-      date = moment(activeLeaf.view.file.basename, format, true);
-      if (date.isValid()) {
-        this.calendar.$set({ displayedMonth: date });
-        return;
-      }
+      //const { format } = getWeeklyNoteSettings(); todo: remove
+      // date = moment(activeLeaf.view.file.basename, format, true);
+      // if (date.isValid()) {
+      //   this.calendar.$set({ displayedMonth: date });
+      //   return;
+      // }
     }
   }
 
+  /* todo: remove
   async openOrCreateWeeklyNote(
     date: Moment,
     inNewSplit: boolean
@@ -282,6 +291,7 @@ export default class CalendarView extends ItemView {
     workspace.setActiveLeaf(leaf, true, true)
   }
 
+  */
   async openOrCreateDailyNote(
     date: Moment,
     inNewSplit: boolean
