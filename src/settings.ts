@@ -66,6 +66,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       text: "General Settings",
     });
     this.addDotThresholdSetting();
+    this.addWeekStartSetting(); // oops
     this.addConfirmCreateSetting();
 
     this.containerEl.createEl("h3", {
