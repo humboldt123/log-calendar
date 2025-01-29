@@ -4,7 +4,6 @@ import { App, Plugin, WorkspaceLeaf } from "obsidian";
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { settings } from "./ui/stores";
 import {
-  appHasPeriodicNotesPluginLoaded,
   CalendarSettingsTab,
   ISettings,
 } from "./settings";
@@ -50,17 +49,6 @@ export default class CalendarPlugin extends Plugin {
           );
         }
         this.initLeaf();
-      },
-    });
-
-    this.addCommand({
-      id: "open-weekly-note",
-      name: "Open Weekly Note",
-      checkCallback: (checking) => {
-        if (checking) {
-          return !appHasPeriodicNotesPluginLoaded();
-        }
-        this.view.openOrCreateWeeklyNote(window.moment(), false);
       },
     });
 
