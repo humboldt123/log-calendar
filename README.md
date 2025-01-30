@@ -2,6 +2,7 @@
 
 This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view for visualizing and navigating between your daily notes.
 
+![screenshot-full](./images/Screenshot%202025-01-29%20at%208.25.33 PM.png)
 
 ## Usage
 
@@ -20,7 +21,7 @@ The plugin reads my Daily Note settings to know the date format, daily note temp
 - **Start week on [default: locale]**: Configure the Calendar view to show Sunday or Monday as the first day of the week. Choosing 'locale' will set the start day to be whatever is the default for your chosen locale (`Settings > About > Language`)
 - **Words per Dot [default: 250]**: Starting in version 1.3, dots reflect the word count of your files. By default, each dot represents 250 words, you can change that value to whatever you want. Set this to `0` to disable the word count entirely. **Note:** There is a max of 5 dots so that the view doesn't get too big!
 - **Confirm before creating new note [default: on]**: If you don't like that a modal prompts you before creating a new daily note, you can turn it off.
-- **Birthday**: Birthday to determine age of when note was created
+- **Birthday [default: 2000-01-01]**: Birthday to determine age of when note was created
 
 ## Customization
 
