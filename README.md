@@ -1,6 +1,6 @@
 # obsidian-calendar-plugin
 
-This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view for visualizing and navigating between my daily notes. I create this fork because my daily notes are not in the same directory, I sort them in folders according to my age at that specific day. (`Daily Log/15`, `Daily Log/16`, etc.)
+This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view for visualizing and navigating between my daily notes. I create this fork because my daily notes are not in the same directory, I sort them in folders according to my age at that specific day (`Daily Log/15`, `Daily Log/16`, etc.)
 
 ![screenshot-full](./images/Screenshot%202025-01-29%20at%208.25.33 PM.png)
 
