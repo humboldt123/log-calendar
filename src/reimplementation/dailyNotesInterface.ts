@@ -6,8 +6,16 @@ import { sep } from 'path'
 import { get } from "svelte/store";
 import { settings } from "src/ui/stores";
 
-function getAge(birthday: string): number {
-  return Math.floor((new Date().getTime() - new Date(birthday).getTime()) / 31557600000)
+function getAge(date: string, birthday: string): number {
+  const birthDate = new Date(birthday);
+  const dateToCheck = new Date(date);
+  
+  let age = dateToCheck.getFullYear() - birthDate.getFullYear();
+  const m = dateToCheck.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && dateToCheck.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
 }
 
 
@@ -22,8 +30,8 @@ function removeAgeFromFolder(folder: string): string {
   
 }
 
-function applyBirthdayToPath(folder: string, birthday: string): string {
-  return folder + sep + String(getAge(birthday));
+function applyAgeToPath(folder: string, targetDate: string, birthday: string): string {
+  return folder + sep + String(getAge(targetDate, birthday));
 }
 
 // Credit: @liamcain/obsidian-daily-notes-interface/src/daily.ts
@@ -44,7 +52,7 @@ export async function createDailyNote(date: Moment): Promise<TFile> {
     const { birthday = "" } = get(settings); 
     if (!(birthday == "" || birthday.split("-").length != 3)) {
       folder = removeAgeFromFolder(folder);
-      folder = applyBirthdayToPath(folder, birthday); 
+      folder = applyAgeToPath(folder, date.format('YYYY-MM-DD'), birthday); // date we're creating, not current 
     }
   
     const [templateContents, IFoldInfo] = await getTemplateInfo(template);
