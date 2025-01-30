@@ -1,9 +1,10 @@
 import type { Moment } from "moment";
 import {
-  getDailyNote,
   getDailyNoteSettings,
   getDateFromFile,
 } from "obsidian-daily-notes-interface";
+
+import { getDailyNote } from "src/reimplementation/dailyNotesInterface"
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 import { get } from "svelte/store";
 

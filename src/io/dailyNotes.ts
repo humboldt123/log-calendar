@@ -1,9 +1,7 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
-import {
-  createDailyNote,
-  getDailyNoteSettings,
-} from "obsidian-daily-notes-interface";
+import { getDailyNoteSettings } from "obsidian-daily-notes-interface";
+import { createDailyNote } from "src/reimplementation/dailyNotesInterface"
 
 import type { ISettings } from "src/settings";
 import { createConfirmationDialog } from "src/ui/modal";
