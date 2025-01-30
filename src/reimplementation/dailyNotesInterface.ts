@@ -2,8 +2,31 @@ import type { Moment } from "moment";
 import { App, normalizePath, Notice, TFile, TFolder, Vault } from "obsidian";
 import { DailyNotesFolderMissingError, getDailyNoteSettings, getDateFromFile, getDateUID, getTemplateInfo } from "obsidian-daily-notes-interface";
 
-// Credit: @liamcain/obsidian-daily-notes-interface/src/vault.ts
+import { sep } from 'path'
+import { get } from "svelte/store";
+import { settings } from "src/ui/stores";
 
+function getAge(birthday: string): number {
+  return Math.floor((new Date().getTime() - new Date(birthday).getTime()) / 31557600000)
+}
+
+
+function removeAgeFromFolder(folder: string): string {
+  const subs = folder.split(sep);
+  if (subs.length > 1) {
+    if (/^\d{1,3}$/.test(subs[subs.length - 1])) {
+      subs.pop();
+    }
+  }
+  return subs.join(sep);
+  
+}
+
+function applyBirthdayToPath(folder: string, birthday: string): string {
+  return folder + sep + String(getAge(birthday));
+}
+
+// Credit: @liamcain/obsidian-daily-notes-interface/src/daily.ts
 /**
  * This function mimics the behavior of the daily-notes plugin
  * so it will replace {{date}}, {{title}}, and {{time}} with the
@@ -16,10 +39,17 @@ export async function createDailyNote(date: Moment): Promise<TFile> {
     const { vault } = app;
     const moment = window.moment;
   
-    const { template, format, folder } = getDailyNoteSettings();
+    const { template, format, folder: initialFolder } = getDailyNoteSettings();
+    let folder = initialFolder;
+    const { birthday = "" } = get(settings); 
+    if (!(birthday == "" || birthday.split("-").length != 3)) {
+      folder = removeAgeFromFolder(folder);
+      folder = applyBirthdayToPath(folder, birthday); 
+    }
   
     const [templateContents, IFoldInfo] = await getTemplateInfo(template);
     const filename = date.format(format);
+
     const normalizedPath = await getNotePath(folder, filename);
   
     try {
@@ -66,31 +96,54 @@ export async function createDailyNote(date: Moment): Promise<TFile> {
       console.error(`Failed to create file: '${normalizedPath}'`, err);
       new Notice("Unable to create new file.");
     }
-  }
-  
-export function getDailyNote(
-date: Moment,
-dailyNotes: Record<string, TFile>
-): TFile {
-return dailyNotes[getDateUID(date, "day")] ?? null;
 }
   
-  export function getAllDailyNotes(): Record<string, TFile> {
-    /**
-     * Find all daily notes in the daily note folder
-     */
-    const { vault } = window.app;
-    const { folder } = getDailyNoteSettings();
+export function getDailyNote(
+  date: Moment,
+  dailyNotes: Record<string, TFile>
+): TFile {
+  return dailyNotes[getDateUID(date, "day")] ?? null;
+}
   
-    const dailyNotesFolder = vault.getAbstractFileByPath(
-      normalizePath(folder)
-    ) as TFolder;
-  
-    if (!dailyNotesFolder) {
-      throw new DailyNotesFolderMissingError("Failed to find daily notes folder");
-    }
-  
-    const dailyNotes: Record<string, TFile> = {};
+export function getAllDailyNotes(): Record<string, TFile> {
+  const { vault } = window.app;
+  let { folder } = getDailyNoteSettings();  
+  const { birthday = "" } = get(settings); 
+  const existsBirthday = (!(birthday == "" || birthday.split("-").length != 3));
+
+  if (existsBirthday) {
+    folder = removeAgeFromFolder(folder);
+  }
+
+  const dailyNotesFolder = vault.getAbstractFileByPath(
+    normalizePath(folder)
+  ) as TFolder;
+
+  if (!dailyNotesFolder) {
+    throw new DailyNotesFolderMissingError("Failed to find daily notes folder");
+  }
+
+  const dailyNotes: Record<string, TFile> = {};
+
+
+  // get all subfolders, then search through them
+  if (existsBirthday) {
+    const subfolders = dailyNotesFolder.children.filter(
+      (child): child is TFolder => child instanceof TFolder
+    );
+
+    subfolders.forEach((subfolder) => {
+      Vault.recurseChildren(subfolder, (note) => {
+        if (note instanceof TFile) {
+          const date = getDateFromFile(note, "day");
+          if (date) {
+            const dateString = getDateUID(date, "day");
+            dailyNotes[dateString] = note;
+          }
+        }
+      });
+    });
+  } else {
     Vault.recurseChildren(dailyNotesFolder, (note) => {
       if (note instanceof TFile) {
         const date = getDateFromFile(note, "day");
@@ -100,58 +153,59 @@ return dailyNotes[getDateUID(date, "day")] ?? null;
         }
       }
     });
-  
-    return dailyNotes;
   }
+
+  return dailyNotes;
+}
 
 // Credit: @liamcain/obsidian-daily-notes-interface/src/vault.ts
 
 // Credit: @creationix/path.js
 export function join(...partSegments: string[]): string {
-    // Split the inputs into a list of path commands.
-    let parts = [];
-    for (let i = 0, l = partSegments.length; i < l; i++) {
-      parts = parts.concat(partSegments[i].split("/"));
-    }
-    // Interpret the path commands to get the new resolved path.
-    const newParts = [];
-    for (let i = 0, l = parts.length; i < l; i++) {
-      const part = parts[i];
-      // Remove leading and trailing slashes
-      // Also remove "." segments
-      if (!part || part === ".") continue;
-      // Push new path segments.
-      else newParts.push(part);
-    }
-    // Preserve the initial slash if there was one.
-    if (parts[0] === "") newParts.unshift("");
-    // Turn back into a single string path.
-    return newParts.join("/");
+  // Split the inputs into a list of path commands.
+  let parts = [];
+  for (let i = 0, l = partSegments.length; i < l; i++) {
+    parts = parts.concat(partSegments[i].split("/"));
   }
+  // Interpret the path commands to get the new resolved path.
+  const newParts = [];
+  for (let i = 0, l = parts.length; i < l; i++) {
+    const part = parts[i];
+    // Remove leading and trailing slashes
+    // Also remove "." segments
+    if (!part || part === ".") continue;
+    // Push new path segments.
+    else newParts.push(part);
+  }
+  // Preserve the initial slash if there was one.
+  if (parts[0] === "") newParts.unshift("");
+  // Turn back into a single string path.
+  return newParts.join("/");
+}
 
 
-  async function ensureFolderExists(path: string): Promise<void> {
-    const dirs = path.replace(/\\/g, "/").split("/");
-    dirs.pop(); // remove basename
-  
-    if (dirs.length) {
-      const dir = join(...dirs);
-      if (!window.app.vault.getAbstractFileByPath(dir)) {
-        await window.app.vault.createFolder(dir);
-      }
-    }
-  }
+async function ensureFolderExists(path: string): Promise<void> {
+  const dirs = path.replace(/\\/g, "/").split("/");
+  dirs.pop(); // remove basename
 
-  async function getNotePath(
-    directory: string,
-    filename: string
-  ): Promise<string> {
-    if (!filename.endsWith(".md")) {
-      filename += ".md";
+  if (dirs.length) {
+    const dir = join(...dirs);
+    if (!window.app.vault.getAbstractFileByPath(dir)) {
+      await window.app.vault.createFolder(dir);
     }
-    const path = normalizePath(join(directory, filename));
-  
-    await ensureFolderExists(path);
-  
-    return path;
   }
+}
+
+async function getNotePath(
+  directory: string,
+  filename: string
+): Promise<string> {
+  if (!filename.endsWith(".md")) {
+    filename += ".md";
+  }
+  const path = normalizePath(join(directory, filename));
+
+  await ensureFolderExists(path);
+
+  return path;
+}
