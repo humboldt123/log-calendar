@@ -8,11 +8,7 @@ export function getDefaultSettings(
     {
       weekStart: "sunday",
       shouldConfirmBeforeCreate: false,
-      wordsPerDot: 50,
-      showWeeklyNote: false,
-      weeklyNoteFolder: "",
-      weeklyNoteFormat: "",
-      weeklyNoteTemplate: "",
+      wordsPerDot: 50
     },
     overrides
   );

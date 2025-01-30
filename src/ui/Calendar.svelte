@@ -10,7 +10,7 @@
   import { onDestroy } from "svelte";
 
   import type { ISettings } from "src/settings";
-  import { activeFile, dailyNotes, settings, weeklyNotes } from "./stores";
+  import { activeFile, dailyNotes, settings } from "./stores";
 
   let today: Moment;
 
@@ -32,7 +32,6 @@
   function getToday(settings: ISettings) {
     configureGlobalMomentLocale(settings.localeOverride, settings.weekStart);
     dailyNotes.reindex();
-    weeklyNotes.reindex();
     return window.moment();
   }
 
@@ -65,5 +64,4 @@
   bind:displayedMonth
   localeData={today.localeData()}
   selectedId={$activeFile}
-  showWeekNums={$settings.showWeeklyNote}
 />
